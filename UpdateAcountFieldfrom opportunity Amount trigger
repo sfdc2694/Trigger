@@ -1,0 +1,38 @@
+public class UpdateBusinessAmountHandler {
+
+    public static void calculateAmountSum(List<Opportunity> oppList){
+        set<ID> setOfaccountId=new set<ID>();
+        map<Id,Double> mapOFAccountIDVSAmount=new map<Id,Double>();
+        for(Opportunity opp:oppList){
+            setOfaccountId.add(opp.AccountId);
+        }
+        List<Opportunity> optyList=[select id,AccountID,Amount,StageName from Opportunity 
+                                    where StageName='Closed Won' AND AccountId=:setOfaccountId];
+        system.debug('optyList+++'+optyList);
+        for(Opportunity op:optyList){
+            if(!mapOFAccountIDVSAmount.containsKey(op.AccountId)){
+                mapOFAccountIDVSAmount.put(op.AccountId,0);
+            }
+            mapOFAccountIDVSAmount.put(op.AccountId,mapOFAccountIDVSAmount.get(op.AccountId)+op.Amount);
+        }
+        system.debug('mapOFAccountIDVSAmount++'+mapOFAccountIDVSAmount);
+        List<Account> accList=new List<Account>();
+        for(Id acId:mapOFAccountIDVSAmount.keySet()){
+            Account acc=new Account();
+            acc.Id=acId;
+            acc.Business_Amount__c=mapOFAccountIDVSAmount.get(acId);
+            accList.add(acc);   
+        }
+        system.debug('accList+++'+accList);
+        update accList;
+    }
+    
+}
+
+Trigger:
+trigger oppBusinessAmountTrigger on Opportunity (after insert,after update) {
+
+    If(trigger.isAfter &&(trigger.isInsert || trigger.isUpdate)){
+        UpdateBusinessAmountHandler.calculateAmountSum(trigger.new);
+    }
+}
