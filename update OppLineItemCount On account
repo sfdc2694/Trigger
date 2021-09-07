@@ -1,0 +1,33 @@
+public class lineItemHandler {
+    
+    public static void countLineItem(List<OpportunityLineItem> lineItems){
+        set<ID> accId=new set<ID>();
+        set<ID> oppId=new set<ID>();
+        for(OpportunityLineItem oli:lineItems){
+            oppId.add(oli.OpportunityId);
+        }
+        List<Opportunity> opList=[select id,AccountID from opportunity where ID=:oppId];
+        for(Opportunity op:opList){
+           accId.add(op.AccountId);
+        }
+        List<Account> accList=new List<Account>();
+        List<AggregateResult> aggregateResult=[select opportunity.AccountID,count(id) items from OpportunityLineItem 
+                                               where opportunity.AccountID=:accId GROUP BY opportunity.AccountID];
+        system.debug('aggregateResult=='+aggregateResult);
+        for(AggregateResult agg:aggregateResult){
+            Account acc=new Account();
+            acc.Id=(Id)agg.get('AccountID');
+            acc.Total_Products__c=(Decimal)agg.get('items');
+            accList.add(acc);
+        }
+        system.debug('accList++'+accList);
+        update accList;
+    }
+}
+trigger:
+trigger opportunityLineItemTrigger on OpportunityLineItem (after insert) {
+if (trigger.isAfter && trigger.isInsert)
+    {
+        lineItemHandler.countLineItem(trigger.new);
+    }
+}
