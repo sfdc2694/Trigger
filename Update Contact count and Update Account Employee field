@@ -1,0 +1,30 @@
+public class UpdateNumberOfContacts {
+    
+    public static void updateEmployees(List<Contact> conList){
+        
+        Set<Id> setOFAccountId=new Set<ID>();
+        map<ID,Integer> mapOFAccountIDVSCount=new map<ID,Integer>();
+        for(Contact con:conList){
+            setOFAccountId.add(con.AccountId);
+        }
+        List<Contact> ccList=[select id,AccountId from Contact where AccountID =:setOFAccountId];
+        for(Contact cc:ccList){
+            Integer i=0;
+            if(!mapOFAccountIDVSCount.containsKey(cc.AccountID)){
+                 mapOFAccountIDVSCount.put(cc.AccountId,i);
+            }
+           mapOFAccountIDVSCount.put(cc.AccountId,mapOFAccountIDVSCount.put(cc.AccountId,i)+1);
+        }
+        system.debug('mapOFAccountIDVSCount$$$'+mapOFAccountIDVSCount);
+        
+        List<Account> accList=new List<Account>();
+
+        for(ID accId:mapOFAccountIDVSCount.KeySet()){
+            Account acc=new Account();
+            acc.Id=accId;
+            acc.NumberOfEmployees=mapOFAccountIDVSCount.get(accID);
+            accList.add(acc);
+        }
+        update accList;
+    }
+}
