@@ -1,0 +1,42 @@
+public class PreventDuplicateAccount {
+    
+    public static void findDuplicate(List<Account> accountList){
+        map<String,Account> mapOFAccountName=new map<String,Account>();
+        for(Account acc:accountList){
+            IF(mapOFAccountName.containsKey(acc.Name)){
+                acc.addError('Duplicate Account');
+            }else{
+               mapOFAccountName.put(acc.Name,acc); 
+            }
+        }
+        List<Account> accList=[select ID,Name from Account where Name IN:mapOFAccountName.keySet()];
+        for(Account acct:accList){
+            IF(mapOFAccountName.containskey(acct.Name)){
+               Account account= mapOFAccountName.get(acct.Name);
+                account.addError('You Have Duplicate Account');
+            }
+        }
+    }
+}
+
+--------------------------
+
+trigger DuplicateAccountFindTrigger on Account (before insert) {
+    
+    Map<String, String> mapDup = new Map<String, String>();
+    for(Account acc:trigger.new)
+    {
+        system.debug('acc'+acc);
+        IF(mapDup.containsKey(acc.Name)){
+            system.debug('--'+mapDup.containsKey(acc.Name));
+            acc.addError('Duplicate Account');     
+        }else{
+            mapDup.put(acc.Name, acc.Name);
+        }
+    }
+    List<AggregateResult> lstResult =[SELECT Name,count(id) FROM Account WHERE Name =:mapDup.keySet() GROUP BY Name HAVING COUNT(Id)>0];
+    if(lstResult.size()>0)
+    {
+        trigger.new[0].addError('Duplicate Account Name Found');
+    }
+}
