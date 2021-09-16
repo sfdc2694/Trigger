@@ -40,3 +40,45 @@ trigger DuplicateAccountFindTrigger on Account (before insert) {
         trigger.new[0].addError('Duplicate Account Name Found');
     }
 }
+
+
+---------------
+@isTest
+public class PreventDuplicateAccountTest {
+    
+    @isTest
+    public static void duplicateAccount(){
+        system.Test.startTest();
+        Account acc=new Account();
+        acc.Name='Account Final 04';
+        
+        
+        
+        Account acct=new Account();
+        acct.Name='Account Final 04';
+        
+        
+        try{
+            insert acc;
+            
+              //Database.SaveResult duplicateAccountResult = Database.insert(acct, false);      
+        }Catch(DMLException e){
+         system.debug(e);
+        }
+        try{
+            insert acct;
+            
+              //Database.SaveResult duplicateAccountResult = Database.insert(acct, false);      
+        }Catch(DMLException e){
+         system.debug('Ext'+e);
+        }
+        system.Test.stopTest();
+        /*system.debug(duplicateAccountResult.getErrors());
+       // system.assertEquals(0,duplicateAccountResult.getErrors());
+        
+        
+        System.assert(!duplicateAccountResult.isSuccess(), 'Duplicate Account');
+        //We can also assert that 1 error occurred
+        System.assert(duplicateAccountResult.getErrors().size() == 1);*/
+    }
+}
