@@ -1,0 +1,57 @@
+public class PreventAccountdeletion {
+    
+    public static void hasOpportunityWithAccount(map<Id,Account> mapofAccount){
+        system.debug('mapofAccount'+mapofAccount);
+        set<ID> setOfAccountID=new set<ID>();
+        for(Id acc:mapofAccount.keySet()){
+            setOfAccountID.add(acc);
+        }
+        system.debug('setOfAccountID'+setOfAccountID);
+        //map<ID,Account> mapofAccoutID=new map<ID,Account>();
+        List<Account> accLsit=[select id,(select id,Name,StageName 
+                                          from Opportunities where (StageName!='Closed Won' OR StageName!='Closed Lost')),Name from Account where ID=:setOfAccountID];
+        system.debug('accLsit'+accLsit);
+        for(Account acc:accLsit){
+            system.debug('size'+acc.Opportunities.size());
+           Account recordID= mapofAccount.get(acc.id);
+            system.debug('recordID'+recordID);
+            if(acc.Opportunities.size() > 0){ 
+                recordID.addError('Sorry ! You can not delete this Account as it has '+ acc.Opportunities.size() +' number of open deals.');
+            }
+        }
+    }
+}
+
+---------------
+
+@isTest
+public class DuplicateAccountTest {
+    @isTest
+    public static void duplicateAccount(){
+        Account acc=new Account();
+        acc.Name='Account Final 04';
+        insert acc;
+        Account acct=new Account();
+        acct.Name='Account Final 04'; 
+        system.Test.startTest(); 
+        Database.SaveResult duplicateAccountResult = Database.insert(acct, false);      
+        system.Test.stopTest();
+        system.debug(duplicateAccountResult.getErrors());
+        // system.assertEquals(0,duplicateAccountResult.getErrors());
+        System.assert(!duplicateAccountResult.isSuccess(), 'Duplicate Account');
+        //We can also assert that 1 error occurred
+        System.assert(duplicateAccountResult.getErrors().size() == 1);
+    }
+    @isTest
+    public static void duplicateAccount2(){
+        List<Account> accList=new List<Account>();
+        Account acc=new Account();
+        acc.Name='Account Final 04';
+        accList.add(acc);
+        Account acct=new Account();
+        acct.Name='Account Final 04';
+        accList.add(acct);
+        
+        insert accList;
+    }
+}
