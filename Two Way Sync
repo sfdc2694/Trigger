@@ -1,0 +1,286 @@
+public class OpportunityDetail {
+    public static void updateAllFields(List<OpportunityDetail__c> detailsList){
+        if(checkRecursive.runOnce())
+        {
+        set<ID> setOFOpportunityID=new set<ID>();
+        for(OpportunityDetail__c opd:detailsList){
+            setOFOpportunityID.add(opd.Opportunity__c);
+        }
+        List<Opportunity> oppList=[select id,Name,Phone__c,NextStep,Amount,CloseDate,OrderNumber__c from Opportunity where ID IN:setOFOpportunityID];
+        map<ID,Opportunity> mapOfOpportunity=new map<ID,Opportunity>();
+        for(Opportunity opp:oppList){
+            mapOfOpportunity.put(opp.Id,opp);
+        }
+        system.debug('mapOfOpportunity++'+mapOfOpportunity);
+        map<ID,Opportunity> mapOFDetilsVSOppID=new map<ID,Opportunity>();
+        
+        for(OpportunityDetail__c ids:detailsList){
+            mapOFDetilsVSOppID.put(ids.Id,mapOfOpportunity.get(ids.Opportunity__C));
+        }
+        system.debug('++'+mapOFDetilsVSOppID);
+        
+        List<Opportunity> listToUpdate= new List<Opportunity>();
+        for(OpportunityDetail__c opds:detailsList){
+            Opportunity opty= mapOFDetilsVSOppID.get(opds.Id);
+            //  opds.Amount__c=opty.Amount;
+            //  opty.Amount=opds.Amount__c;
+           IF(opds.Amount__c==null && opty.Amount!=null){
+                opds.Amount__c=opty.Amount;
+            }else IF(opds.CloseDate__c!=null && opty.CloseDate==null){
+                opty.Amount=opds.Amount__c;
+            }Else IF(opds.Amount__c!=null && opty.Amount!=null){
+                opty.Amount=opds.Amount__c;
+            }
+            IF(opds.CloseDate__c==null && opty.CloseDate!=null){
+                opds.CloseDate__c=opty.CloseDate;
+            }else IF(opds.CloseDate__c!=null && opty.CloseDate==null){
+                opty.CloseDate=opds.CloseDate__c;
+            }Else IF(opds.CloseDate__c!=null && opty.CloseDate!=null){
+                opty.CloseDate=opds.CloseDate__c;
+            }
+            IF(opds.NextStep__c==null && opty.NextStep!=null){
+                opds.NextStep__c=opty.NextStep; 
+            }else IF(opds.NextStep__c!=null && opty.NextStep==null){
+                opty.NextStep=opds.NextStep__c;
+            }else IF(opds.NextStep__c!=null && opty.NextStep!=null){
+                opty.NextStep=opds.NextStep__c;
+            }
+            
+            IF(opds.Order_Number__c==null && opty.OrderNumber__c!=null){
+                opds.Order_Number__c=opty.OrderNumber__c; 
+            }else IF(opds.Order_Number__c!=null && opty.OrderNumber__c ==null){
+                opty.OrderNumber__c=opds.Order_Number__c; 
+            }else IF(opds.Order_Number__c!=null && opty.OrderNumber__c !=null){
+                opty.OrderNumber__c=opds.Order_Number__c;
+            }
+            opty.Discount_Percent__c=5;
+           // opty.stop__c=true;
+            listToUpdate.add(opty);
+        }
+        update listToUpdate;
+        }
+    }
+    public static void updateSync(List<OpportunityDetail__c> listOfDetails,map<ID,OpportunityDetail__c> oldDataMap,map<ID,OpportunityDetail__c> newDataMap){
+       System.debug('@@@@checkRecursive.run '+checkRecursive.run);
+        if(checkRecursive.runOnce()){
+        system.debug('listOfDetails'+listOfDetails);
+        system.debug('oldDataMap'+oldDataMap);
+        system.debug('newDataMap'+newDataMap);
+        set<ID> setOfOppID=new set<ID>();
+        for(OpportunityDetail__c ld:listOfDetails){
+            setOfOppID.add(ld.Opportunity__c);
+        }
+        List<Opportunity> oppList=[select id,Name,Phone__c,NextStep,Amount,CloseDate,OrderNumber__c from Opportunity where ID IN:setOfOppID];
+        map<ID,Opportunity> mapOfOpportunity=new map<ID,Opportunity>();
+        for(Opportunity opp:oppList){
+            mapOfOpportunity.put(opp.Id,opp);
+        }
+        map<ID,Opportunity> mapOFDetilsVSOppID=new map<ID,Opportunity>();
+        for(OpportunityDetail__c ids:listOfDetails){
+            mapOFDetilsVSOppID.put(ids.Id,mapOfOpportunity.get(ids.Opportunity__C));
+        }
+        List<Opportunity> opListToUpdate=new List<Opportunity>();
+        for(OpportunityDetail__c opds:listOfDetails){
+            Opportunity opty= mapOFDetilsVSOppID.get(opds.Id);
+            system.debug('opty'+opty);
+            OpportunityDetail__c oldValue=oldDataMap.get(opds.Id);
+            system.Debug('oldValue'+oldValue);
+            OpportunityDetail__c newValue=newDataMap.get(opds.Id);
+            system.debug('newValue'+newValue);
+            system.debug('opdsAmt'+opds.Amount__c);
+            IF(newValue.Amount__c != oldValue.Amount__c){
+                IF(opty.Amount!=newValue.Amount__c){
+                opty.Amount=newValue.Amount__c;
+                }
+            }   
+            IF(newValue.NextStep__c != oldValue.NextStep__c){
+                IF(opty.NextStep!=newValue.NextStep__c){
+                opty.NextStep=newValue.NextStep__c;
+                }
+            }
+            IF(newValue.CloseDate__c != oldValue.CloseDate__c){
+                IF(opty.CloseDate != newValue.CloseDate__c){
+                opty.CloseDate=newValue.CloseDate__c;
+                }
+            } 
+            IF(newValue.Order_Number__c != oldValue.Order_Number__c){
+                If( opty.OrderNumber__c!=newValue.Order_Number__c){
+                opty.OrderNumber__c=newValue.Order_Number__c;
+                }
+            }
+            opListToUpdate.add(opty);
+        }
+        system.debug('opListToUpdate'+opListToUpdate);
+        update opListToUpdate;
+    }
+    }
+}
+--------------
+public class OpportunityDetail {
+    public static void updateAllFields(List<OpportunityDetail__c> detailsList){
+        if(checkRecursive.runOnce())
+        {
+        set<ID> setOFOpportunityID=new set<ID>();
+        for(OpportunityDetail__c opd:detailsList){
+            setOFOpportunityID.add(opd.Opportunity__c);
+        }
+        List<Opportunity> oppList=[select id,Name,Phone__c,NextStep,Amount,CloseDate,OrderNumber__c from Opportunity where ID IN:setOFOpportunityID];
+        map<ID,Opportunity> mapOfOpportunity=new map<ID,Opportunity>();
+        for(Opportunity opp:oppList){
+            mapOfOpportunity.put(opp.Id,opp);
+        }
+        system.debug('mapOfOpportunity++'+mapOfOpportunity);
+        map<ID,Opportunity> mapOFDetilsVSOppID=new map<ID,Opportunity>();
+        
+        for(OpportunityDetail__c ids:detailsList){
+            mapOFDetilsVSOppID.put(ids.Id,mapOfOpportunity.get(ids.Opportunity__C));
+        }
+        system.debug('++'+mapOFDetilsVSOppID);
+        
+        List<Opportunity> listToUpdate= new List<Opportunity>();
+        for(OpportunityDetail__c opds:detailsList){
+            Opportunity opty= mapOFDetilsVSOppID.get(opds.Id);
+            //  opds.Amount__c=opty.Amount;
+            //  opty.Amount=opds.Amount__c;
+           IF(opds.Amount__c==null && opty.Amount!=null){
+                opds.Amount__c=opty.Amount;
+            }else IF(opds.CloseDate__c!=null && opty.CloseDate==null){
+                opty.Amount=opds.Amount__c;
+            }Else IF(opds.Amount__c!=null && opty.Amount!=null){
+                opty.Amount=opds.Amount__c;
+            }
+            IF(opds.CloseDate__c==null && opty.CloseDate!=null){
+                opds.CloseDate__c=opty.CloseDate;
+            }else IF(opds.CloseDate__c!=null && opty.CloseDate==null){
+                opty.CloseDate=opds.CloseDate__c;
+            }Else IF(opds.CloseDate__c!=null && opty.CloseDate!=null){
+                opty.CloseDate=opds.CloseDate__c;
+            }
+            IF(opds.NextStep__c==null && opty.NextStep!=null){
+                opds.NextStep__c=opty.NextStep; 
+            }else IF(opds.NextStep__c!=null && opty.NextStep==null){
+                opty.NextStep=opds.NextStep__c;
+            }else IF(opds.NextStep__c!=null && opty.NextStep!=null){
+                opty.NextStep=opds.NextStep__c;
+            }
+            
+            IF(opds.Order_Number__c==null && opty.OrderNumber__c!=null){
+                opds.Order_Number__c=opty.OrderNumber__c; 
+            }else IF(opds.Order_Number__c!=null && opty.OrderNumber__c ==null){
+                opty.OrderNumber__c=opds.Order_Number__c; 
+            }else IF(opds.Order_Number__c!=null && opty.OrderNumber__c !=null){
+                opty.OrderNumber__c=opds.Order_Number__c;
+            }
+            opty.Discount_Percent__c=5;
+           // opty.stop__c=true;
+            listToUpdate.add(opty);
+        }
+        update listToUpdate;
+        }
+    }
+    public static void updateSync(List<OpportunityDetail__c> listOfDetails,map<ID,OpportunityDetail__c> oldDataMap,map<ID,OpportunityDetail__c> newDataMap){
+       System.debug('@@@@checkRecursive.run '+checkRecursive.run);
+        if(checkRecursive.runOnce()){
+        system.debug('listOfDetails'+listOfDetails);
+        system.debug('oldDataMap'+oldDataMap);
+        system.debug('newDataMap'+newDataMap);
+        set<ID> setOfOppID=new set<ID>();
+        for(OpportunityDetail__c ld:listOfDetails){
+            setOfOppID.add(ld.Opportunity__c);
+        }
+        List<Opportunity> oppList=[select id,Name,Phone__c,NextStep,Amount,CloseDate,OrderNumber__c from Opportunity where ID IN:setOfOppID];
+        map<ID,Opportunity> mapOfOpportunity=new map<ID,Opportunity>();
+        for(Opportunity opp:oppList){
+            mapOfOpportunity.put(opp.Id,opp);
+        }
+        map<ID,Opportunity> mapOFDetilsVSOppID=new map<ID,Opportunity>();
+        for(OpportunityDetail__c ids:listOfDetails){
+            mapOFDetilsVSOppID.put(ids.Id,mapOfOpportunity.get(ids.Opportunity__C));
+        }
+        List<Opportunity> opListToUpdate=new List<Opportunity>();
+        for(OpportunityDetail__c opds:listOfDetails){
+            Opportunity opty= mapOFDetilsVSOppID.get(opds.Id);
+            system.debug('opty'+opty);
+            OpportunityDetail__c oldValue=oldDataMap.get(opds.Id);
+            system.Debug('oldValue'+oldValue);
+            OpportunityDetail__c newValue=newDataMap.get(opds.Id);
+            system.debug('newValue'+newValue);
+            system.debug('opdsAmt'+opds.Amount__c);
+            IF(newValue.Amount__c != oldValue.Amount__c){
+                IF(opty.Amount!=newValue.Amount__c){
+                opty.Amount=newValue.Amount__c;
+                }
+            }   
+            IF(newValue.NextStep__c != oldValue.NextStep__c){
+                IF(opty.NextStep!=newValue.NextStep__c){
+                opty.NextStep=newValue.NextStep__c;
+                }
+            }
+            IF(newValue.CloseDate__c != oldValue.CloseDate__c){
+                IF(opty.CloseDate != newValue.CloseDate__c){
+                opty.CloseDate=newValue.CloseDate__c;
+                }
+            } 
+            IF(newValue.Order_Number__c != oldValue.Order_Number__c){
+                If( opty.OrderNumber__c!=newValue.Order_Number__c){
+                opty.OrderNumber__c=newValue.Order_Number__c;
+                }
+            }
+            opListToUpdate.add(opty);
+        }
+        system.debug('opListToUpdate'+opListToUpdate);
+        update opListToUpdate;
+    }
+    }
+}
+------------------
+trigger OptyTriggerForDetails on Opportunity (after Update)
+{
+    if(checkRecursive.runOnce())
+    {
+        Map <Id,Opportunity > mapOpportunity = new Map<Id,Opportunity >();
+        List <OpportunityDetail__c> listopportunitydetsils = new List<OpportunityDetail__c>();
+        List < OpportunityDetail__c> listToUpdate = new List<OpportunityDetail__c>();
+        for ( Opportunity opp : trigger.new) 
+        {
+            if (opp.Amount != trigger.oldMap.get( opp.Id ).Amount || opp.NextStep != trigger.oldMap.get( opp.Id ).NextStep || 
+                opp.CloseDate != trigger.oldMap.get( opp.Id ).CloseDate || opp.OrderNumber__c != trigger.oldMap.get( opp.Id ).OrderNumber__c)
+                mapOpportunity.put( opp.Id, opp );
+        }
+        system.debug('mapOpportunity'+mapOpportunity);
+        if(mapOpportunity.size()>0)
+        {
+            listopportunitydetsils = [ SELECT id,Order_Number__c, Name, Opportunity__c,Amount__c,NextStep__c,CloseDate__c FROM OpportunityDetail__c WHERE Opportunity__c IN : mapOpportunity.keySet() ];
+        }
+        for(OpportunityDetail__c opd : listopportunitydetsils)  {
+            opd.Order_Number__c = mapOpportunity.get( opd.Opportunity__c ).OrderNumber__c;
+            opd.Amount__c = mapOpportunity.get( opd.Opportunity__c ).Amount;
+            opd.NextStep__c = mapOpportunity.get( opd.Opportunity__c ).NextStep;
+            opd.NextStep__c = mapOpportunity.get( opd.Opportunity__c ).NextStep;
+            opd.CloseDate__c = mapOpportunity.get( opd.Opportunity__c ).CloseDate;
+            listToUpdate.add(opd);
+        }
+        system.debug('listToUpdate'+listToUpdate);
+        if(listToUpdate.size()>0)
+        {
+            update listToUpdate;
+        }
+    }
+}
+-----------------
+public Class checkRecursive
+{
+    public static boolean run = true;
+    public static boolean runOnce()
+    {
+        if(run)
+        {
+         run=false;
+         return true;
+        }
+        else
+        {
+            return run;
+        }
+    }
+}
